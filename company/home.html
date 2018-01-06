@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Places Searchbox</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #description {
+        font-family: Roboto;
+        font-size: 15px;
+        font-weight: 300;
+      }
+
+      #infowindow-content .title {
+        font-weight: bold;
+      }
+
+      #infowindow-content {
+        display: none;
+      }
+
+      #map #infowindow-content {
+        display: inline;
+		 transition: margin-left .5s;
+    padding: 16px;
+      }
+
+      .pac-card {
+        margin: 10px 10px 0 0;
+        border-radius: 2px 0 0 2px;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        outline: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        background-color: #fff;
+        font-family: Roboto;
+      }
+
+      #pac-container {
+        padding-bottom: 12px;
+        margin-right: 12px;
+      }
+
+      .pac-controls {
+        display: inline-block;
+        padding: 5px 11px;
+      }
+
+      
+
+    
+#pac-input{
+padding: 12px;
+margin: 30px;
+}
+    
+
+      #title {
+        color: #fff;
+        background-color: #4d90fe;
+        font-size: 25px;
+        font-weight: 500;
+        padding: 6px 12px;
+      }
+      #target {
+        width: 345px;
+      }
+	  input[type=text] {
+    width: 200px;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+  
+    padding: 12px 20px 12px 40px;
+    -webkit-transition: width 0.4s ease-in-out;
+    transition: width 0.4s ease-in-out;
+}
+
+input[type=text]:focus {
+    width: 30%;
+}
+.sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+}
+
+.sidenav a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s
+}
+
+.sidenav a:hover, .offcanvas a:focus{
+    color: #f1f1f1;
+}
+
+.closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px !important;
+    margin-left: 50px;
+}
+
+#map {
+    transition: margin-left .5s;
+    padding: 16px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+    </style>
+  </head>
+  <body>
+  
+  <div id="mySidenav" class="sidenav">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+  <div class="w3-container">
+ 
+
+  <div class="w3-card-4 w3-dark-grey" style="width:100%">
+
+    <div class="w3-container w3-center">
+      <h3><label id="lbltipAddedComment">test</label></h3>
+      <img class='img' src=''/>
+      <h5>John Doe</h5>
+
+      <div class="w3-section">
+        <button class="w3-button w3-green">Accept</button>
+       
+      </div>
+    </div>
+
+  </div>
+</div>
+  <div>
+
+
+</div>  
+</div>
+
+    <input id="pac-input" class="controls" type="text" placeholder="Search Location">
+    <div id="map"></div>
+	<input type=button action="openNav()" />
+    <script>
+	function openNav() {
+    document.getElementById("mySidenav").style.width = "400px";
+    document.getElementById("map").style.marginLeft = "400px";
+    document.body.style.backgroundColor = "rgba(0,0,0,0.4)";
+}
+
+function closeNav() {
+    document.getElementById("mySidenav").style.width = "0";
+    document.getElementById("map").style.marginLeft= "0";
+    document.body.style.backgroundColor = "white";
+}
+
+      // This example adds a search box to a map, using the Google Place Autocomplete
+      // feature. People can enter geographical searches. The search box will return a
+      // pick list containing a mix of places and predicted search terms.
+
+      // This example requires the Places library. Include the libraries=places
+      // parameter when you first load the API. For example:
+      // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+
+      function initAutocomplete() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 5.4163, lng: 100.3328},
+          zoom: 13,
+		   disableDefaultUI: true,
+          mapTypeId: 'roadmap'
+		  
+        });
+
+        // Create the search box and link it to the UI element.
+        var input = document.getElementById('pac-input');
+        var searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+        // Bias the SearchBox results towards current map's viewport.
+        map.addListener('bounds_changed', function() {
+          searchBox.setBounds(map.getBounds());
+        });
+
+        var markers = [];
+        // Listen for the event fired when the user selects a prediction and retrieve
+        // more details for that place.
+        searchBox.addListener('places_changed', function() {
+          var places = searchBox.getPlaces();
+
+          if (places.length == 0) {
+            return;
+          }
+
+          // Clear out the old markers.
+          markers.forEach(function(marker) {
+            marker.setMap(null);
+          });
+          markers = [];
+
+          // For each place, get the icon, name and location.
+          var bounds = new google.maps.LatLngBounds();
+          places.forEach(function(place) {
+            if (!place.geometry) {
+              console.log("Returned place contains no geometry");
+              return;
+            }
+			var photos = place.photos;
+		
+  
+  if (!photos) {
+    return;
+  }
+	var test ='';
+  var marker = new google.maps.Marker({
+    map: map,
+    position: place.geometry.location,
+    title: place.name,
+    icon: photos[0].getUrl({'maxWidth': 35, 'maxHeight': 35})
+  });
+  openNav() ;
+  var geocoder = new google.maps.Geocoder;
+
+			
+  var latlng = {lat: marker.position.lat(), lng: marker.position.lng()};
+	geocoder.geocode({'location': latlng}, function(results, status) {
+	  if (status === 'OK') {
+            if (results[0]) {
+
+	console.log(""+results[0].formatted_address);
+	document.getElementById('lbltipAddedComment').innerHTML = results[0].formatted_address;
+	}}});
+
+
+			
+  $('.img').attr('src',photos[0].getUrl({'maxWidth': 200, 'maxHeight': 250}));
+
+            var icon = {
+              url: place.icon,
+              size: new google.maps.Size(71, 71),
+              origin: new google.maps.Point(0, 0),
+              anchor: new google.maps.Point(17, 34),
+              scaledSize: new google.maps.Size(25, 25)
+            };
+			
+			
+
+            // Create a marker for each place.
+            markers.push(new google.maps.Marker({
+              map: map,
+              icon: icon,
+              title: place.name,
+              position: place.geometry.location
+            }));
+
+            if (place.geometry.viewport) {
+              // Only geocodes have viewport.
+              bounds.union(place.geometry.viewport);
+            } else {
+              bounds.extend(place.geometry.location);
+            }
+          });
+          map.fitBounds(bounds);
+        });
+		 google.maps.event.addListener(map, 'click', function (e) {
+		openNav();
+		
+		
+        //Determine the location where the user has clicked.
+        var location = e.latLng;
+ 
+        //Create a marker and placed it on the map.
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map
+        });
+		
+		 var geocoder = new google.maps.Geocoder;
+
+			
+		var latlng = {lat: marker.position.lat(), lng: marker.position.lng()};
+		geocoder.geocode({'location': latlng}, function(results, status) {
+		if (status === 'OK') {
+            if (results[0]) {
+
+		console.log(""+results[0].formatted_address);
+		document.getElementById('lbltipAddedComment').innerHTML = results[0].formatted_address;
+	}}});
+	
+	var photos = e.photos;
+		
+	 $('.img').attr('src',photos[1].getUrl({'maxWidth': 200, 'maxHeight': 250}));
+ 
+        
+    });
+      }
+	  
+	  
+	  
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCHN1npuX6TKA899-esnWetlgRvXGbJKu8&libraries=places&callback=initAutocomplete"
+         async defer></script>
+  </body>
+</html>
